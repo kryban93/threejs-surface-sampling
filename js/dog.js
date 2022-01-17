@@ -5,7 +5,15 @@ import { OBJLoader } from 'https://threejs.org/examples/jsm/loaders/OBJLoader.js
 
 window.addEventListener('DOMContentLoaded', init);
 
-let renderer, camera, scene, spheres, dog, box, sampler;
+let renderer,
+	camera,
+	scene,
+	dog,
+	sampler,
+	vertices = [],
+	colors = [],
+	sparklesGeometry,
+	points;
 
 let windowSizes = {
 	HEIGHT: window.innerHeight,
@@ -23,6 +31,15 @@ const cameraOptions = {
 		z: 200,
 	},
 };
+
+const palette = [
+	new THREE.Color('#FAAD80'),
+	new THREE.Color('#e35214'),
+	new THREE.Color('#fcede6'),
+	new THREE.Color('#4f2315'),
+];
+
+const tempPosition = new THREE.Vector3();
 
 function init() {
 	const container = document.getElementById('container');
@@ -54,38 +71,45 @@ function init() {
 	loader.load('../assets/dog.obj', (object) => {
 		dog = object.children[0];
 		dog.material = new THREE.MeshBasicMaterial({
-			wireframe: true,
 			color: 0xffffff,
 			transparent: true,
-			opacity: 0.05,
+			opacity: 0.001,
 		});
 		scene.add(dog);
 
 		sampler = new MeshSurfaceSampler(dog).build();
 
-		const sphereGeometry = new THREE.SphereGeometry(0.05, 6, 6);
-		const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffdddd });
-		spheres = new THREE.InstancedMesh(sphereGeometry, sphereMaterial, 300);
+		sparklesGeometry = new THREE.BufferGeometry();
+		const sparklesMaterial = new THREE.PointsMaterial({
+			size: 0.1,
+			alphaTest: 0.2,
+			vertexColors: true,
+		});
 
-		const tempPosition = new THREE.Vector3();
-		const tempObject = new THREE.Object3D();
-		for (let i = 0; i < 300; i++) {
-			sampler.sample(tempPosition);
-			tempObject.position.set(tempPosition.x, tempPosition.y, tempPosition.z);
-			tempObject.scale.setScalar(Math.random() * 0.2 + 0.1);
-			tempObject.updateMatrix();
-			spheres.setMatrixAt(i, tempObject.matrix);
-		}
-		scene.add(spheres);
+		points = new THREE.Points(sparklesGeometry, sparklesMaterial);
+
+		scene.add(points);
+
+		animate();
 	});
+}
 
-	animate();
+function addPoint() {
+	sampler.sample(tempPosition);
+	vertices.push(tempPosition.x, tempPosition.y, tempPosition.z);
+	sparklesGeometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+
+	const color = palette[Math.floor(Math.random() * palette.length)];
+	colors.push(color.r, color.g, color.b);
+	sparklesGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 }
 
 function animate() {
 	requestAnimationFrame(animate);
 
-	//spheres.rotation.y += 0.01;
+	addPoint();
+	dog.rotation.y += 0.001;
+	points.rotation.y += 0.001;
 
 	renderer.render(scene, camera);
 }
