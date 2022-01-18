@@ -3,6 +3,7 @@ import { OrbitControls } from 'https://threejs.org/examples/jsm/controls/OrbitCo
 import { MeshSurfaceSampler } from 'https://threejs.org/examples/jsm/math/MeshSurfaceSampler.js';
 
 window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('resize', handleWindowResize);
 
 let renderer, camera, scene, box, spheres;
 
@@ -74,6 +75,14 @@ function init() {
 	scene.add(spheres);
 
 	animate();
+}
+
+function handleWindowResize() {
+	windowSizes.HEIGHT = window.innerHeight;
+	windowSizes.WIDTH = window.innerWidth;
+	renderer.setSize(windowSizes.WIDTH, windowSizes.HEIGHT);
+	camera.aspectRatio = windowSizes.WIDTH / windowSizes.HEIGHT;
+	camera.updateProjectionMatrix();
 }
 
 function animate() {

@@ -4,6 +4,7 @@ import { MeshSurfaceSampler } from 'https://threejs.org/examples/jsm/math/MeshSu
 import { OBJLoader } from 'https://threejs.org/examples/jsm/loaders/OBJLoader.js';
 
 window.addEventListener('DOMContentLoaded', init);
+window.addEventListener('resize', handleWindowResize);
 
 let renderer,
 	camera,
@@ -82,7 +83,7 @@ function init() {
 
 		sparklesGeometry = new THREE.BufferGeometry();
 		const sparklesMaterial = new THREE.PointsMaterial({
-			size: 0.01,
+			size: 0.05,
 			alphaTest: 0.2,
 			vertexColors: true,
 		});
@@ -93,6 +94,14 @@ function init() {
 
 		animate();
 	});
+}
+
+function handleWindowResize() {
+	windowSizes.HEIGHT = window.innerHeight;
+	windowSizes.WIDTH = window.innerWidth;
+	renderer.setSize(windowSizes.WIDTH, windowSizes.HEIGHT);
+	camera.aspectRatio = windowSizes.WIDTH / windowSizes.HEIGHT;
+	camera.updateProjectionMatrix();
 }
 
 function addPoint() {
@@ -107,8 +116,9 @@ function addPoint() {
 
 function animate() {
 	requestAnimationFrame(animate);
-
-	addPoint();
+	if (vertices.length < 30000) {
+		addPoint();
+	}
 	dog.rotation.y += 0.001;
 	points.rotation.y += 0.001;
 
