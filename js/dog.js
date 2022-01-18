@@ -44,7 +44,7 @@ const tempPosition = new THREE.Vector3();
 function init() {
 	const container = document.getElementById('container');
 
-	renderer = new THREE.WebGLRenderer({ antialias: true });
+	renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 	renderer.setSize(windowSizes.WIDTH, windowSizes.HEIGHT);
 	renderer.setPixelRatio(window.devicePixelRatio);
 	container.appendChild(renderer.domElement);
@@ -75,13 +75,14 @@ function init() {
 			transparent: true,
 			opacity: 0.001,
 		});
+		dog.scale.set(10, 10, 10);
 		scene.add(dog);
 
 		sampler = new MeshSurfaceSampler(dog).build();
 
 		sparklesGeometry = new THREE.BufferGeometry();
 		const sparklesMaterial = new THREE.PointsMaterial({
-			size: 0.1,
+			size: 0.01,
 			alphaTest: 0.2,
 			vertexColors: true,
 		});
