@@ -6,7 +6,13 @@ import { OBJLoader } from 'https://threejs.org/examples/jsm/loaders/OBJLoader.js
 window.addEventListener('DOMContentLoaded', init);
 window.addEventListener('resize', handleWindowResize);
 
-let renderer, camera, scene, dog, sampler, paths;
+let renderer,
+	camera,
+	scene,
+	dog,
+	sampler,
+	path,
+	pathsArray = [];
 
 let windowSizes = {
 	HEIGHT: window.innerHeight,
@@ -24,6 +30,13 @@ const cameraOptions = {
 		z: 200,
 	},
 };
+
+const lineMaterials = [
+	new THREE.LineBasicMaterial({ color: 0xfaad80, transparent: true, opacity: 0.5 }),
+	new THREE.LineBasicMaterial({ color: '#e35214', transparent: true, opacity: 0.5 }),
+	new THREE.LineBasicMaterial({ color: '#fcede6', transparent: true, opacity: 0.5 }),
+	new THREE.LineBasicMaterial({ color: '#4f2315', transparent: true, opacity: 0.5 }),
+];
 
 const tempPosition = new THREE.Vector3();
 
@@ -66,8 +79,15 @@ function init() {
 
 		sampler = new MeshSurfaceSampler(dog).build();
 
-		paths = new Path();
-		scene.add(paths.line);
+		const paths = new THREE.Group();
+
+		for (let i = 0; i < 4; i++) {
+			const path = new Path(i);
+			pathsArray.push(path);
+			paths.add(path.line);
+		}
+
+		scene.add(paths);
 
 		animate();
 	});
@@ -84,16 +104,19 @@ function handleWindowResize() {
 function animate() {
 	requestAnimationFrame(animate);
 
-	paths.update();
-
+	pathsArray.forEach((path) => {
+		if (path.vertices.length < 10000) {
+			path.update();
+		}
+	});
 	renderer.render(scene, camera);
 }
 
 class Path {
-	constructor() {
+	constructor(index) {
 		this.vertices = [];
 		this.geometry = new THREE.BufferGeometry();
-		this.material = new THREE.LineBasicMaterial({ color: 0xccc111 });
+		this.material = lineMaterials[index % 4];
 		this.line = new THREE.Line(this.geometry, this.material);
 
 		sampler.sample(tempPosition);
@@ -106,7 +129,7 @@ class Path {
 		while (!pointFound) {
 			sampler.sample(tempPosition);
 
-			if (tempPosition.distanceTo(this.previousPoint) < 1) {
+			if (tempPosition.distanceTo(this.previousPoint) < 0.5) {
 				this.vertices.push(tempPosition.x, tempPosition.y, tempPosition.z);
 				this.previousPoint = tempPosition.clone();
 				pointFound = true;
